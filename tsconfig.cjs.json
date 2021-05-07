@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"allowUnusedLabels": false,
+		"alwaysStrict": true,
+		"module": "CommonJS",
+		"newLine": "LF",
+		"target": "es2019",
+		"noUnusedLocals": true,
+		"declarationMap": true,
+		"strictFunctionTypes": true,
+		"declaration": true,
+		"inlineSources": true,
+		"sourceMap": true,
+		"watch": false,
+		"allowSyntheticDefaultImports": true,
+		"experimentalDecorators": true,
+		"noEmitOnError": true,
+		"outDir": "prebuilt/cjs",
+		"noFallthroughCasesInSwitch": true,
+		"moduleResolution": "node"
+	},
+	"include": ["src/**/*.ts"]
+}

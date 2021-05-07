@@ -1,0 +1,23 @@
+{
+  "name": "graphml-viewer",
+  "version": "0.0.0",
+  "description": "Under construction",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prepublish": "npm run deploy",
+    "deploy": "npm run build && tsc -p tsconfig.amd.json && tsc -p tsconfig.cjs.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CyberPhoenix90/graphml-viewer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CyberPhoenix90/graphml-viewer/issues"
+  },
+  "homepage": "https://github.com/CyberPhoenix90/graphml-viewer#readme"
+}
