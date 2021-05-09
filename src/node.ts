@@ -1,3 +1,5 @@
+import { Vector } from './vector.js';
+
 export class Node {
 	public id: string;
 
@@ -13,6 +15,14 @@ export class Node {
 
 	public get height(): number {
 		return this.bottom - this.top;
+	}
+
+	public get centerX(): number {
+		return this.left + this.width / 2;
+	}
+
+	public get centerY(): number {
+		return this.top + this.height / 2;
 	}
 
 	private shape: Element;
@@ -35,6 +45,15 @@ export class Node {
 		}
 	}
 
+	public generateBoundingBox(): Vector[] {
+		return [
+			new Vector(this.left + this.width, this.top),
+			new Vector(this.left + this.width, this.top + this.height),
+			new Vector(this.left, this.top + this.height),
+			new Vector(this.left, this.top)
+		];
+	}
+
 	public render(svg: SVGSVGElement, offsetX: number, offsetY: number) {
 		const shapeNode = this.shape.getElementsByTagName('y:Shape');
 		if (shapeNode.length) {
@@ -43,7 +62,7 @@ export class Node {
 			switch (shapeType) {
 				case 'roundrectangle':
 					node = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-					node.setAttribute('rx', '6');
+					node.setAttribute('rx', '5');
 					this.setDimensions(node, offsetX, offsetY);
 					break;
 				case 'rectangle':

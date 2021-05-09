@@ -136,6 +136,10 @@ class GraphmlViewer extends HTMLElement {
 			node.render(this.svg, -minX, -minY);
 		}
 
+		for (const edge of edgeWrappers.values()) {
+			edge.render(this.svg, nodeWrappers.get(edge.source), nodeWrappers.get(edge.target), -minX, -minY);
+		}
+
 		return true;
 	}
 }
