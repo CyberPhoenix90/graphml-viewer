@@ -4,13 +4,22 @@ export class Edge {
         this.id = edgeXML.getAttribute('id');
         this.source = edgeXML.getAttribute('source');
         this.target = edgeXML.getAttribute('target');
-        this.polylineEdge = edgeXML.getElementsByTagName('y:PolyLineEdge')[0];
+        this.root = edgeXML;
     }
     render(svg, source, target, offsetX, offsetY) {
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        const startVector = this.castRay(new Vector(source.centerX, source.centerY), new Vector(target.centerX, target.centerY), source.generateBoundingBox().map((obstacle) => new Vector(source.centerX, source.centerY).subVec(obstacle))) ?? new Vector(source.centerX, source.centerY);
-        const lineVector = this.castRay(new Vector(source.centerX, source.centerY), new Vector(target.centerX, target.centerY), target.generateBoundingBox().map((obstacle) => obstacle.subVec(new Vector(source.centerX, source.centerY))));
+        const points = [
+            new Vector(source.centerX, source.centerY),
+            ...Array.from(this.root.getElementsByTagName('y:Point')).map((n) => new Vector(parseFloat(n.getAttribute('x')), parseFloat(n.getAttribute('y')))),
+            new Vector(target.centerX, target.centerY)
+        ];
+        const first = points[0];
+        const second = points[1];
+        const secondToLast = points[points.length - 2];
+        const last = points[points.length - 1];
+        const startVector = this.castRay(new Vector(first.x, first.y), new Vector(second.x, second.y), source.generateBoundingBox().map((obstacle) => new Vector(first.x, first.y).subVec(obstacle))) ?? new Vector(first.x, first.y);
+        const lineVector = this.castRay(new Vector(secondToLast.x, secondToLast.y), new Vector(last.x, last.y), target.generateBoundingBox().map((obstacle) => obstacle.subVec(new Vector(secondToLast.x, secondToLast.y))));
         let startArrowId = Math.random().toString(16).substring(2);
         let endArrowId = Math.random().toString(16).substring(2);
         if (this.hasStartArrow()) {
@@ -43,49 +52,48 @@ export class Edge {
             g.appendChild(marker);
             lineVector.moveForward(-10);
         }
-        line.setAttribute('d', `M${startVector.x + source.centerX + offsetX} ${startVector.y + source.centerY + offsetY} L${lineVector.x + source.centerX + offsetX} ${lineVector.y + source.centerY + offsetY}`);
+        points.pop();
+        points.shift();
+        line.setAttribute('d', `M${startVector.x + source.centerX + offsetX} ${startVector.y + source.centerY + offsetY} ${points
+            .map((s) => `L${s.x + offsetX},${s.y + offsetY}`)
+            .join(' ')} L${lineVector.x + secondToLast.x + offsetX} ${lineVector.y + secondToLast.y + offsetY}`);
         this.handleLineStyle(line);
         this.handleArrow(line, startArrowId, endArrowId);
         g.appendChild(line);
         svg.appendChild(g);
     }
     hasStartArrow() {
-        const src = this.polylineEdge && this.polylineEdge.getElementsByTagName('y:Arrows')[0]?.getAttribute('source');
+        const src = this.root.getElementsByTagName('y:Arrows')[0]?.getAttribute('source');
         return !!src && src !== 'none';
     }
     hasEndArrow() {
-        const src = this.polylineEdge && this.polylineEdge.getElementsByTagName('y:Arrows')[0]?.getAttribute('target');
+        const src = this.root.getElementsByTagName('y:Arrows')[0]?.getAttribute('target');
         return !!src && src !== 'none';
     }
     handleArrow(line, startArrowId, endArrowId) {
-        if (this.polylineEdge) {
-            const arrows = this.polylineEdge.getElementsByTagName('y:Arrows');
-            if (arrows.length) {
-                if (arrows[0].getAttribute('source') !== 'none') {
-                    line.setAttribute('marker-start', `url(#${startArrowId})`);
-                }
-                if (arrows[0].getAttribute('target') !== 'none') {
-                    line.setAttribute('marker-end', `url(#${endArrowId})`);
-                }
+        const arrows = this.root.getElementsByTagName('y:Arrows');
+        if (arrows.length) {
+            if (arrows[0].getAttribute('source') !== 'none') {
+                line.setAttribute('marker-start', `url(#${startArrowId})`);
+            }
+            if (arrows[0].getAttribute('target') !== 'none') {
+                line.setAttribute('marker-end', `url(#${endArrowId})`);
             }
         }
     }
     getEdgeColor() {
-        if (this.polylineEdge) {
-            const ls = this.polylineEdge.getElementsByTagName('y:LineStyle');
-            if (ls.length) {
-                return ls[0].getAttribute('color');
-            }
+        const ls = this.root.getElementsByTagName('y:LineStyle');
+        if (ls.length) {
+            return ls[0].getAttribute('color');
         }
         return 'black';
     }
     handleLineStyle(line) {
-        if (this.polylineEdge) {
-            const ls = this.polylineEdge.getElementsByTagName('y:LineStyle');
-            if (ls.length) {
-                line.setAttribute('stroke', ls[0].getAttribute('color'));
-                line.setAttribute('stroke-width', ls[0].getAttribute('width'));
-            }
+        const ls = this.root.getElementsByTagName('y:LineStyle');
+        if (ls.length) {
+            line.setAttribute('fill', 'transparent');
+            line.setAttribute('stroke', ls[0].getAttribute('color'));
+            line.setAttribute('stroke-width', ls[0].getAttribute('width'));
         }
     }
     castRay(startLocation, target, obstacles) {
