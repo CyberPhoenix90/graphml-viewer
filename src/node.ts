@@ -46,12 +46,21 @@ export class Node {
 	}
 
 	public generateBoundingBox(): Vector[] {
-		return [
-			new Vector(this.left + this.width, this.top),
-			new Vector(this.left + this.width, this.top + this.height),
-			new Vector(this.left, this.top + this.height),
-			new Vector(this.left, this.top)
-		];
+		if (this.isEllipse()) {
+			return this.generateRegularPolygonVector(20, this.width / 2, this.height / 2, this.centerX, this.centerY, Math.PI / 2);
+		} else {
+			return [
+				new Vector(this.left + this.width, this.top),
+				new Vector(this.left + this.width, this.top + this.height),
+				new Vector(this.left, this.top + this.height),
+				new Vector(this.left, this.top)
+			];
+		}
+	}
+
+	private isEllipse(): boolean {
+		const shapeNode = this.shape.getElementsByTagName('y:Shape');
+		return shapeNode[0].getAttribute('type') === 'ellipse';
 	}
 
 	public render(svg: SVGSVGElement, offsetX: number, offsetY: number) {
@@ -131,7 +140,7 @@ export class Node {
 		}
 	}
 
-	private generateRegularPolygon(sides: number, rx: number, ry: number, offsetX: number, offsetY: number, startAngle: number): any {
+	private generateRegularPolygon(sides: number, rx: number, ry: number, offsetX: number, offsetY: number, startAngle: number): string {
 		let step = (Math.PI * 2) / sides;
 		const points = [];
 		for (let i = 0; i < sides; i++) {
@@ -139,6 +148,16 @@ export class Node {
 			startAngle += step;
 		}
 		return points.join(' ');
+	}
+
+	private generateRegularPolygonVector(sides: number, rx: number, ry: number, offsetX: number, offsetY: number, startAngle: number): Vector[] {
+		let step = (Math.PI * 2) / sides;
+		const points: Vector[] = [];
+		for (let i = 0; i < sides; i++) {
+			points.push(new Vector(offsetX + rx * Math.sin(startAngle), offsetY + ry * Math.cos(startAngle)));
+			startAngle += step;
+		}
+		return points;
 	}
 
 	private handleLabel(svg: SVGGElement): void {
