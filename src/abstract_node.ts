@@ -51,20 +51,31 @@ export abstract class AbstractNode {
 	public abstract render(svg: SVGSVGElement, offsetX: number, offsetY: number);
 
 	protected handleLabel(svg: SVGGElement): void {
-		const label = this.root.getElementsByTagName('y:NodeLabel');
-		if (label.length) {
-			const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-			node.textContent = label[0].textContent;
-			node.setAttribute('width', label[0].getAttribute('width'));
-			node.setAttribute('height', label[0].getAttribute('height'));
-			node.setAttribute('fill', label[0].getAttribute('textColor'));
-			node.setAttribute('font-family', label[0].getAttribute('fontFamily'));
-			node.setAttribute('font-size', label[0].getAttribute('fontSize'));
-			node.setAttribute('dominant-baseline', 'middle');
-			node.setAttribute('text-anchor', 'middle');
-			node.setAttribute('x', `${parseFloat(label[0].getAttribute('x')) + parseFloat(label[0].getAttribute('width')) / 2}`);
-			node.setAttribute('y', `${parseFloat(label[0].getAttribute('y')) + parseFloat(label[0].getAttribute('height')) / 2}`);
-			svg.appendChild(node);
+		const labels = this.root.getElementsByTagName('y:NodeLabel');
+		if (labels.length) {
+			for (const label of labels) {
+				const lines = label.textContent.split('\n');
+				for (let i = 0; i < lines.length; i++) {
+					if (!lines[i]) {
+						continue;
+					}
+					const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+					node.textContent = lines[i];
+					node.setAttribute('width', label.getAttribute('width'));
+					node.setAttribute('height', label.getAttribute('height'));
+					node.setAttribute('fill', label.getAttribute('textColor'));
+					node.setAttribute('font-family', label.getAttribute('fontFamily'));
+					node.setAttribute('font-size', label.getAttribute('fontSize'));
+					node.setAttribute('dominant-baseline', 'middle');
+					node.setAttribute('text-anchor', 'middle');
+					node.setAttribute('x', `${parseFloat(label.getAttribute('x')) + parseFloat(label.getAttribute('width')) / 2}`);
+					node.setAttribute(
+						'y',
+						`${parseFloat(label.getAttribute('y')) + parseFloat(label.getAttribute('height')) / 2 + i * parseFloat(label.getAttribute('fontSize'))}`
+					);
+					svg.appendChild(node);
+				}
+			}
 		}
 	}
 	public setDimensions(svgNode: SVGGElement | SVGSVGElement | SVGTextElement | SVGRectElement): void {

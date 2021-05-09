@@ -22,24 +22,6 @@ export class GenericNode extends AbstractNode {
 		this.handleLabel(g);
 	}
 
-	protected handleLabel(svg: SVGGElement): void {
-		const label = this.shape.getElementsByTagName('y:NodeLabel');
-		if (label.length) {
-			const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-			node.textContent = label[0].textContent;
-			node.setAttribute('width', label[0].getAttribute('width'));
-			node.setAttribute('height', label[0].getAttribute('height'));
-			node.setAttribute('fill', label[0].getAttribute('textColor'));
-			node.setAttribute('font-family', label[0].getAttribute('fontFamily'));
-			node.setAttribute('font-size', label[0].getAttribute('fontSize'));
-			node.setAttribute('dominant-baseline', 'middle');
-			node.setAttribute('text-anchor', 'middle');
-			node.setAttribute('x', `${parseFloat(label[0].getAttribute('x')) + parseFloat(label[0].getAttribute('width')) / 2}`);
-			node.setAttribute('y', `${parseFloat(label[0].getAttribute('y')) + parseFloat(label[0].getAttribute('height')) / 2}`);
-			svg.appendChild(node);
-		}
-	}
-
 	protected setFill(svgNode: SVGSVGElement | SVGGElement | SVGRectElement): void {
 		const fill = this.shape.getElementsByTagName('y:Fill');
 		if (fill.length) {
