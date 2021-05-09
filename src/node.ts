@@ -58,33 +58,90 @@ export class Node {
 		const shapeNode = this.shape.getElementsByTagName('y:Shape');
 		if (shapeNode.length) {
 			let node;
+			const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 			const shapeType = shapeNode[0].getAttribute('type');
 			switch (shapeType) {
 				case 'roundrectangle':
 					node = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
 					node.setAttribute('rx', '5');
-					this.setDimensions(node, offsetX, offsetY);
+					this.setDimensions(node);
+					this.setPosition(g, offsetX, offsetY);
 					break;
+				case 'rectangle3d':
 				case 'rectangle':
 					node = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-					this.setDimensions(node, offsetX, offsetY);
+					this.setDimensions(node);
+					this.setPosition(g, offsetX, offsetY);
+					break;
+				case 'hexagon':
+					node = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+					this.setPosition(g, offsetX, offsetY);
+					node.setAttribute('points', this.generateRegularPolygon(6, this.width / 2, this.height / 2, this.width / 2, this.height / 2, Math.PI / 2));
+					break;
+				case 'triangle':
+					node = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+					this.setPosition(g, offsetX, offsetY);
+					node.setAttribute('points', this.generateRegularPolygon(3, this.width / 2, this.height / 2, this.width / 2, this.height / 2, Math.PI));
+					this.setDimensions(node);
+					break;
+				case 'diamond':
+					node = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+					this.setPosition(g, offsetX, offsetY);
+					node.setAttribute('points', this.generateRegularPolygon(4, this.width / 2, this.height / 2, this.width / 2, this.height / 2, Math.PI));
+					this.setDimensions(node);
+					break;
+				case 'octagon':
+					node = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+					this.setPosition(g, offsetX, offsetY);
+					node.setAttribute('points', this.generateRegularPolygon(8, this.width / 2, this.height / 2, this.width / 2, this.height / 2, Math.PI / 8));
+					this.setDimensions(node);
+					break;
+				case 'trapezoid':
+					node = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+					this.setPosition(g, offsetX, offsetY);
+					node.setAttribute('points', `${0.15 * this.width},${0} ${this.width * 0.85},${0} ${this.width},${this.height} ${0},${this.height}`);
+					this.setDimensions(node);
+					break;
+				case 'trapezoid2':
+					node = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+					this.setPosition(g, offsetX, offsetY);
+					node.setAttribute('points', `${0},${0} ${this.width},${0} ${0.85 * this.width},${this.height} ${0.15 * this.width},${this.height}`);
+					this.setDimensions(node);
+					break;
+				case 'parallelogram':
+					node = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+					this.setPosition(g, offsetX, offsetY);
+					node.setAttribute('points', `${0.1 * this.width},${0} ${this.width},${0} ${0.9 * this.width},${this.height} ${0},${this.height}`);
+					this.setDimensions(node);
 					break;
 				case 'ellipse':
 					node = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+					this.setPosition(g, offsetX, offsetY);
 					node.setAttribute('rx', `${this.width / 2}`);
 					node.setAttribute('ry', `${this.height / 2}`);
-					node.setAttribute('cx', (this.left + offsetX + this.width / 2).toString());
-					node.setAttribute('cy', (this.top + offsetY + this.height / 2).toString());
+					node.setAttribute('cx', (this.width / 2).toString());
+					node.setAttribute('cy', (this.height / 2).toString());
 					break;
 			}
 			this.setFill(node);
 			this.setBorder(node);
-			svg.appendChild(node);
-			this.handleLabel(svg, offsetX, offsetY);
+			g.appendChild(node);
+			svg.appendChild(g);
+			this.handleLabel(g);
 		}
 	}
 
-	private handleLabel(svg: SVGSVGElement, offsetX: number, offsetY: number): void {
+	private generateRegularPolygon(sides: number, rx: number, ry: number, offsetX: number, offsetY: number, startAngle: number): any {
+		let step = (Math.PI * 2) / sides;
+		const points = [];
+		for (let i = 0; i < sides; i++) {
+			points.push(`${offsetX + rx * Math.sin(startAngle)},${offsetY + ry * Math.cos(startAngle)}`);
+			startAngle += step;
+		}
+		return points.join(' ');
+	}
+
+	private handleLabel(svg: SVGGElement): void {
 		const label = this.shape.getElementsByTagName('y:NodeLabel');
 		if (label.length) {
 			const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -94,22 +151,21 @@ export class Node {
 			node.setAttribute('fill', label[0].getAttribute('textColor'));
 			node.setAttribute('font-family', label[0].getAttribute('fontFamily'));
 			node.setAttribute('font-size', label[0].getAttribute('fontSize'));
-			if (this.shape.getElementsByTagName('y:Shape')[0].getAttribute('type') === 'ellipse') {
-				node.setAttribute('dominant-baseline', 'middle');
-			} else {
-				node.setAttribute('dominant-baseline', 'ideographic');
-			}
-			node.setAttribute('x', `${this.left + offsetX + parseFloat(label[0].getAttribute('x'))}`);
-			node.setAttribute('y', `${this.top + this.height / 2 + offsetY + parseFloat(label[0].getAttribute('y'))}`);
+			node.setAttribute('dominant-baseline', 'middle');
+			node.setAttribute('text-anchor', 'middle');
+			node.setAttribute('x', `${parseFloat(label[0].getAttribute('x')) + parseFloat(label[0].getAttribute('width')) / 2}`);
+			node.setAttribute('y', `${parseFloat(label[0].getAttribute('y')) + parseFloat(label[0].getAttribute('height')) / 2}`);
 			svg.appendChild(node);
 		}
 	}
 
-	private setDimensions(svgNode: SVGSVGElement | SVGTextElement, offsetX: number, offsetY: number): void {
+	private setDimensions(svgNode: SVGSVGElement | SVGTextElement): void {
 		svgNode.setAttribute('width', this.width.toString());
 		svgNode.setAttribute('height', this.height.toString());
-		svgNode.setAttribute('x', (this.left + offsetX).toString());
-		svgNode.setAttribute('y', (this.top + offsetY).toString());
+	}
+
+	private setPosition(svgNode: SVGSVGElement | SVGTextElement | SVGGElement, offsetX: number, offsetY: number) {
+		svgNode.setAttribute('transform', `translate(${this.left + offsetX},${this.top + offsetY})`);
 	}
 
 	private setFill(svgNode: SVGSVGElement): void {

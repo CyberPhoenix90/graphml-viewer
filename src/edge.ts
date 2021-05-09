@@ -12,9 +12,7 @@ export class Edge {
 		this.id = edgeXML.getAttribute('id');
 		this.source = edgeXML.getAttribute('source');
 		this.target = edgeXML.getAttribute('target');
-		this.polylineEdge = Array.from(edgeXML.getElementsByTagName('data'))
-			.find((d) => d.getElementsByTagName('y:PolyLineEdge')[0])
-			?.getElementsByTagName('y:PolyLineEdge')[0];
+		this.polylineEdge = edgeXML.getElementsByTagName('y:PolyLineEdge')[0];
 	}
 
 	public render(svg: SVGSVGElement, source: Node, target: Node, offsetX: number, offsetY: number): void {

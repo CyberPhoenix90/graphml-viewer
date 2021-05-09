@@ -75,7 +75,7 @@ class GraphmlViewer extends HTMLElement {
 			this.svg.removeChild(this.svg.firstChild);
 		}
 
-		const graphNodes = xmlDocument.getElementsByTagName('graph');
+		const graphNodes = Array.from(xmlDocument.childNodes[0].childNodes).filter((c) => c.nodeName === 'graph') as Element[];
 
 		// Graphml needs one and only one graph node to be valid
 		if (graphNodes.length !== 1) {
@@ -102,20 +102,22 @@ class GraphmlViewer extends HTMLElement {
 				return false;
 			}
 
-			const nodeWrapper = new Node(node);
-			nodeWrappers.set(node.getAttribute('id'), nodeWrapper);
+			if (node.getElementsByTagName('y:ShapeNode')[0]) {
+				const nodeWrapper = new Node(node);
+				nodeWrappers.set(node.getAttribute('id'), nodeWrapper);
 
-			if (nodeWrapper.left < minX) {
-				minX = nodeWrapper.left;
-			}
-			if (nodeWrapper.top < minY) {
-				minY = nodeWrapper.top;
-			}
-			if (nodeWrapper.right > maxX) {
-				maxX = nodeWrapper.right;
-			}
-			if (nodeWrapper.bottom > maxY) {
-				maxY = nodeWrapper.bottom;
+				if (nodeWrapper.left < minX) {
+					minX = nodeWrapper.left;
+				}
+				if (nodeWrapper.top < minY) {
+					minY = nodeWrapper.top;
+				}
+				if (nodeWrapper.right > maxX) {
+					maxX = nodeWrapper.right;
+				}
+				if (nodeWrapper.bottom > maxY) {
+					maxY = nodeWrapper.bottom;
+				}
 			}
 		}
 
