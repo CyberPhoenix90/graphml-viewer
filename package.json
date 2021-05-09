@@ -2,7 +2,7 @@
 	"name": "graphml-viewer",
 	"version": "0.0.1",
 	"description": "GraphML Viewer is a simple library to render graphml files (for example from yed or draw.io) in your browser using SVG!",
-	"main": "index.js",
+	"main": "prebuilt/esnext/graphml-viewer.js",
 	"scripts": {
 		"build": "tsc",
 		"watch": "tsc -w",

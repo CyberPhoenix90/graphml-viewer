@@ -4,7 +4,9 @@ dist_test
 coverage
 /.vscode/settings.json
 .history
-prebuilt
+prebuilt/**/*.d.ts
+prebuilt/**/*.d.ts.map
+prebuilt/**/*.js.map
 prebuilt_minified
 docs
 dist
