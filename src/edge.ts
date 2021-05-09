@@ -1,4 +1,4 @@
-import { Node } from './node.js';
+import { AbstractNode } from './abstract_node.js';
 import { Vector } from './vector.js';
 
 export class Edge {
@@ -15,7 +15,7 @@ export class Edge {
 		this.polylineEdge = edgeXML.getElementsByTagName('y:PolyLineEdge')[0];
 	}
 
-	public render(svg: SVGSVGElement, source: Node, target: Node, offsetX: number, offsetY: number): void {
+	public render(svg: SVGSVGElement, source: AbstractNode, target: AbstractNode, offsetX: number, offsetY: number): void {
 		const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 		const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 

@@ -1,5 +1,8 @@
-import { Node } from './node.js';
+import { AbstractNode } from './abstract_node.js';
 import { Edge } from './edge.js';
+import { GenericNode } from './generic_node.js';
+import { ShapeNode } from './shape_node.js';
+import { SVGNode } from './svg_node.js';
 
 class GraphmlViewer extends HTMLElement {
 	static get observedAttributes() {
@@ -91,9 +94,18 @@ class GraphmlViewer extends HTMLElement {
 		let maxX = Number.MIN_SAFE_INTEGER;
 		let maxY = Number.MIN_SAFE_INTEGER;
 
-		const nodeWrappers = new Map<string, Node>();
+		const nodeWrappers = new Map<string, AbstractNode>();
 		const edgeWrappers = new Map<string, Edge>();
+		const resources = new Map<string, string>();
 
+		const resourceNodes = xmlDocument.getElementsByTagName('y:Resource');
+		for (const resource of resourceNodes) {
+			if (!resource.hasAttribute('id')) {
+				this.throwSyntaxError();
+				return false;
+			}
+			resources.set(resource.getAttribute('id'), resource.innerHTML);
+		}
 		const nodeNodes = graphNodes[0].getElementsByTagName('node');
 
 		for (const node of nodeNodes) {
@@ -102,22 +114,29 @@ class GraphmlViewer extends HTMLElement {
 				return false;
 			}
 
+			let nodeWrapper: AbstractNode;
 			if (node.getElementsByTagName('y:ShapeNode')[0]) {
-				const nodeWrapper = new Node(node);
-				nodeWrappers.set(node.getAttribute('id'), nodeWrapper);
+				nodeWrapper = new ShapeNode(node);
+			} else if (node.getElementsByTagName('y:GenericNode')[0]) {
+				nodeWrapper = new GenericNode(node);
+			} else if (node.getElementsByTagName('y:SVGNode')[0]) {
+				nodeWrapper = new SVGNode(node, resources);
+			} else {
+				continue;
+			}
 
-				if (nodeWrapper.left < minX) {
-					minX = nodeWrapper.left;
-				}
-				if (nodeWrapper.top < minY) {
-					minY = nodeWrapper.top;
-				}
-				if (nodeWrapper.right > maxX) {
-					maxX = nodeWrapper.right;
-				}
-				if (nodeWrapper.bottom > maxY) {
-					maxY = nodeWrapper.bottom;
-				}
+			nodeWrappers.set(node.getAttribute('id'), nodeWrapper);
+			if (nodeWrapper.left < minX) {
+				minX = nodeWrapper.left;
+			}
+			if (nodeWrapper.top < minY) {
+				minY = nodeWrapper.top;
+			}
+			if (nodeWrapper.right > maxX) {
+				maxX = nodeWrapper.right;
+			}
+			if (nodeWrapper.bottom > maxY) {
+				maxY = nodeWrapper.bottom;
 			}
 		}
 
