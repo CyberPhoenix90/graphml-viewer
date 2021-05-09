@@ -37,6 +37,15 @@ inside the entry point file.
 
 This project only supports modern browsers such as Edge, Chrome, Firefox and Safari. IE support may be achievable with the right polyfills but the codebase will not target IE
 
+## Dependencies
+
+This project is dependency free!
+
 ## Security Notice
 
 GraphML documents can load external content when opened. Only open GraphML documents you trust. In the future content policy features will be added to allow sandboxing the rendering process
+
+## Preview
+
+You can view this library in action here:
+https://cyberphoenix90.github.io/graphml-viewer/
