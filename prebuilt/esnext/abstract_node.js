@@ -42,7 +42,7 @@ export class AbstractNode {
             for (const label of labels) {
                 const lines = label.textContent.split('\n');
                 for (let i = 0; i < lines.length; i++) {
-                    if (!lines[i]) {
+                    if (!lines[i].trim()) {
                         continue;
                     }
                     const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
