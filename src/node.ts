@@ -26,10 +26,10 @@ export class Node {
 				this.shape = shape[0];
 				const geometry = shape[0].getElementsByTagName('y:Geometry');
 				if (geometry.length) {
-					this.left = parseInt(geometry[0].getAttribute('x'));
-					this.right = this.left + parseInt(geometry[0].getAttribute('width'));
-					this.top = parseInt(geometry[0].getAttribute('y'));
-					this.bottom = this.top + parseInt(geometry[0].getAttribute('height'));
+					this.left = parseFloat(geometry[0].getAttribute('x'));
+					this.right = this.left + parseFloat(geometry[0].getAttribute('width'));
+					this.top = parseFloat(geometry[0].getAttribute('y'));
+					this.bottom = this.top + parseFloat(geometry[0].getAttribute('height'));
 				}
 			}
 		}
@@ -61,24 +61,46 @@ export class Node {
 			this.setFill(node);
 			this.setBorder(node);
 			svg.appendChild(node);
+			this.handleLabel(svg, offsetX, offsetY);
 		}
 	}
 
-	private setDimensions(svgNode: SVGRectElement, offsetX: number, offsetY: number) {
+	private handleLabel(svg: SVGSVGElement, offsetX: number, offsetY: number): void {
+		const label = this.shape.getElementsByTagName('y:NodeLabel');
+		if (label.length) {
+			const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			node.textContent = label[0].textContent;
+			node.setAttribute('width', label[0].getAttribute('width'));
+			node.setAttribute('height', label[0].getAttribute('height'));
+			node.setAttribute('fill', label[0].getAttribute('textColor'));
+			node.setAttribute('font-family', label[0].getAttribute('fontFamily'));
+			node.setAttribute('font-size', label[0].getAttribute('fontSize'));
+			if (this.shape.getElementsByTagName('y:Shape')[0].getAttribute('type') === 'ellipse') {
+				node.setAttribute('dominant-baseline', 'middle');
+			} else {
+				node.setAttribute('dominant-baseline', 'ideographic');
+			}
+			node.setAttribute('x', `${this.left + offsetX + parseFloat(label[0].getAttribute('x'))}`);
+			node.setAttribute('y', `${this.top + this.height / 2 + offsetY + parseFloat(label[0].getAttribute('y'))}`);
+			svg.appendChild(node);
+		}
+	}
+
+	private setDimensions(svgNode: SVGSVGElement | SVGTextElement, offsetX: number, offsetY: number): void {
 		svgNode.setAttribute('width', this.width.toString());
 		svgNode.setAttribute('height', this.height.toString());
 		svgNode.setAttribute('x', (this.left + offsetX).toString());
 		svgNode.setAttribute('y', (this.top + offsetY).toString());
 	}
 
-	private setFill(svgNode: SVGRectElement) {
+	private setFill(svgNode: SVGSVGElement): void {
 		const fill = this.shape.getElementsByTagName('y:Fill');
 		if (fill.length) {
 			svgNode.setAttribute('fill', fill[0].getAttribute('color'));
 		}
 	}
 
-	private setBorder(svgNode: SVGRectElement) {
+	private setBorder(svgNode: SVGSVGElement): void {
 		const border = this.shape.getElementsByTagName('y:BorderStyle');
 		if (border.length) {
 			svgNode.setAttribute('stroke', border[0].getAttribute('color'));

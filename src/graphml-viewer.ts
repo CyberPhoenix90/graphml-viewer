@@ -130,7 +130,7 @@ class GraphmlViewer extends HTMLElement {
 			edgeWrappers.set(edge.getAttribute('id'), new Edge(edge));
 		}
 
-		this.svg.setAttribute('viewBox', `-2 -2 ${maxX - minX + 2} ${maxY - minY + 2}`);
+		this.svg.setAttribute('viewBox', `-4 -4 ${maxX - minX + 8} ${maxY - minY + 8}`);
 		this.svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 		for (const node of nodeWrappers.values()) {
 			node.render(this.svg, -minX, -minY);
