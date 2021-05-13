@@ -104,17 +104,17 @@ class GraphmlViewer extends HTMLElement {
                 continue;
             }
             nodeWrappers.set(node.getAttribute('id'), nodeWrapper);
-            if (nodeWrapper.left < minX) {
-                minX = nodeWrapper.left;
+            if (nodeWrapper.outerLeft < minX) {
+                minX = nodeWrapper.outerLeft;
             }
-            if (nodeWrapper.top < minY) {
-                minY = nodeWrapper.top;
+            if (nodeWrapper.outerTop < minY) {
+                minY = nodeWrapper.outerTop;
             }
-            if (nodeWrapper.right > maxX) {
-                maxX = nodeWrapper.right;
+            if (nodeWrapper.outerRight > maxX) {
+                maxX = nodeWrapper.outerRight;
             }
-            if (nodeWrapper.bottom > maxY) {
-                maxY = nodeWrapper.bottom;
+            if (nodeWrapper.outerBottom > maxY) {
+                maxY = nodeWrapper.outerBottom;
             }
         }
         const edgeNodes = graphNodes[0].getElementsByTagName('edge');
@@ -123,7 +123,20 @@ class GraphmlViewer extends HTMLElement {
                 this.throwSyntaxError();
                 return false;
             }
-            edgeWrappers.set(edge.getAttribute('id'), new edge_js_1.Edge(edge));
+            const edgeWrapper = new edge_js_1.Edge(edge);
+            edgeWrappers.set(edge.getAttribute('id'), edgeWrapper);
+            if (edgeWrapper.left < minX) {
+                minX = edgeWrapper.left;
+            }
+            if (edgeWrapper.top < minY) {
+                minY = edgeWrapper.top;
+            }
+            if (edgeWrapper.right > maxX) {
+                maxX = edgeWrapper.right;
+            }
+            if (edgeWrapper.bottom > maxY) {
+                maxY = edgeWrapper.bottom;
+            }
         }
         this.svg.setAttribute('viewBox', `-4 -4 ${maxX - minX + 8} ${maxY - minY + 8}`);
         this.svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');

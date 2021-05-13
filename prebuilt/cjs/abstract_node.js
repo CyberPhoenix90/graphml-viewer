@@ -4,39 +4,66 @@ exports.AbstractNode = void 0;
 const vector_js_1 = require("./vector.js");
 class AbstractNode {
     constructor(nodeXML) {
+        //Outer refers to the edge of the rendered content including labels and edges
         // The default values are designed to never change the AABB computation in case the node has no rendered content
-        this.left = Number.MAX_SAFE_INTEGER;
-        this.right = Number.MIN_SAFE_INTEGER;
-        this.top = Number.MAX_SAFE_INTEGER;
-        this.bottom = Number.MIN_SAFE_INTEGER;
+        this.outerLeft = Number.MAX_SAFE_INTEGER;
+        this.outerRight = Number.MIN_SAFE_INTEGER;
+        this.outerTop = Number.MAX_SAFE_INTEGER;
+        this.outerBottom = Number.MIN_SAFE_INTEGER;
+        //Inner refers to just the node itself
+        this.innerLeft = Number.MAX_SAFE_INTEGER;
+        this.innerRight = Number.MIN_SAFE_INTEGER;
+        this.innerTop = Number.MAX_SAFE_INTEGER;
+        this.innerBottom = Number.MIN_SAFE_INTEGER;
         this.id = nodeXML.getAttribute('id');
         this.root = nodeXML;
         const geometry = nodeXML.getElementsByTagName('y:Geometry');
         if (geometry.length) {
-            this.left = parseFloat(geometry[0].getAttribute('x'));
-            this.right = this.left + parseFloat(geometry[0].getAttribute('width'));
-            this.top = parseFloat(geometry[0].getAttribute('y'));
-            this.bottom = this.top + parseFloat(geometry[0].getAttribute('height'));
+            this.innerLeft = this.outerLeft = parseFloat(geometry[0].getAttribute('x'));
+            this.innerRight = this.outerRight = this.innerLeft + parseFloat(geometry[0].getAttribute('width'));
+            this.innerTop = this.outerTop = parseFloat(geometry[0].getAttribute('y'));
+            this.innerBottom = this.outerBottom = this.innerTop + parseFloat(geometry[0].getAttribute('height'));
+        }
+        const labels = this.root.getElementsByTagName('y:NodeLabel');
+        if (labels.length) {
+            for (const label of labels) {
+                const x = parseFloat(label.getAttribute('x')) + this.innerLeft;
+                const y = parseFloat(label.getAttribute('y')) + this.innerTop;
+                const w = parseFloat(label.getAttribute('width'));
+                const h = parseFloat(label.getAttribute('height'));
+                if (x < this.outerLeft) {
+                    this.outerLeft = x;
+                }
+                if (y < this.outerTop) {
+                    this.outerTop = y;
+                }
+                if (x + w > this.outerRight) {
+                    this.outerRight = x + w;
+                }
+                if (y + h > this.outerBottom) {
+                    this.outerBottom = y + h;
+                }
+            }
         }
     }
     get width() {
-        return this.right - this.left;
+        return this.innerRight - this.innerLeft;
     }
     get height() {
-        return this.bottom - this.top;
+        return this.innerBottom - this.innerTop;
     }
     get centerX() {
-        return this.left + this.width / 2;
+        return this.innerLeft + this.width / 2;
     }
     get centerY() {
-        return this.top + this.height / 2;
+        return this.innerTop + this.height / 2;
     }
     generateBoundingBox() {
         return [
-            new vector_js_1.Vector(this.left + this.width, this.top),
-            new vector_js_1.Vector(this.left + this.width, this.top + this.height),
-            new vector_js_1.Vector(this.left, this.top + this.height),
-            new vector_js_1.Vector(this.left, this.top)
+            new vector_js_1.Vector(this.innerLeft + this.width, this.innerTop),
+            new vector_js_1.Vector(this.innerLeft + this.width, this.innerTop + this.height),
+            new vector_js_1.Vector(this.innerLeft, this.innerTop + this.height),
+            new vector_js_1.Vector(this.innerLeft, this.innerTop)
         ];
     }
     handleLabel(svg) {
@@ -69,7 +96,7 @@ class AbstractNode {
         svgNode.setAttribute('height', this.height.toString());
     }
     setPosition(svgNode, offsetX, offsetY) {
-        svgNode.setAttribute('transform', `translate(${this.left + offsetX},${this.top + offsetY})`);
+        svgNode.setAttribute('transform', `translate(${this.innerLeft + offsetX},${this.innerTop + offsetY})`);
     }
 }
 exports.AbstractNode = AbstractNode;

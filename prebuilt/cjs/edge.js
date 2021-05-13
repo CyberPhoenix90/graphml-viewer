@@ -4,10 +4,34 @@ exports.Edge = void 0;
 const vector_js_1 = require("./vector.js");
 class Edge {
     constructor(edgeXML) {
+        // The default values are designed to never change the AABB computation in case the node has no rendered content
+        this.left = Number.MAX_SAFE_INTEGER;
+        this.right = Number.MIN_SAFE_INTEGER;
+        this.top = Number.MAX_SAFE_INTEGER;
+        this.bottom = Number.MIN_SAFE_INTEGER;
         this.id = edgeXML.getAttribute('id');
         this.source = edgeXML.getAttribute('source');
         this.target = edgeXML.getAttribute('target');
         this.root = edgeXML;
+        const points = edgeXML.getElementsByTagName('y:Point');
+        if (points.length) {
+            for (const point of points) {
+                const x = parseFloat(point.getAttribute('x'));
+                const y = parseFloat(point.getAttribute('y'));
+                if (x < this.left) {
+                    this.left = x;
+                }
+                if (y < this.top) {
+                    this.top = y;
+                }
+                if (x > this.right) {
+                    this.right = x;
+                }
+                if (y > this.bottom) {
+                    this.bottom = y;
+                }
+            }
+        }
     }
     render(svg, source, target, offsetX, offsetY) {
         var _a;

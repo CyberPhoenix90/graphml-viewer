@@ -121,7 +121,20 @@ class GraphmlViewer extends HTMLElement {
                 this.throwSyntaxError();
                 return false;
             }
-            edgeWrappers.set(edge.getAttribute('id'), new Edge(edge));
+            const edgeWrapper = new Edge(edge);
+            edgeWrappers.set(edge.getAttribute('id'), edgeWrapper);
+            if (edgeWrapper.left < minX) {
+                minX = edgeWrapper.left;
+            }
+            if (edgeWrapper.top < minY) {
+                minY = edgeWrapper.top;
+            }
+            if (edgeWrapper.right > maxX) {
+                maxX = edgeWrapper.right;
+            }
+            if (edgeWrapper.bottom > maxY) {
+                maxY = edgeWrapper.bottom;
+            }
         }
         this.svg.setAttribute('viewBox', `-4 -4 ${maxX - minX + 8} ${maxY - minY + 8}`);
         this.svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
