@@ -126,17 +126,17 @@ class GraphmlViewer extends HTMLElement {
 			}
 
 			nodeWrappers.set(node.getAttribute('id'), nodeWrapper);
-			if (nodeWrapper.left < minX) {
-				minX = nodeWrapper.left;
+			if (nodeWrapper.outerLeft < minX) {
+				minX = nodeWrapper.outerLeft;
 			}
-			if (nodeWrapper.top < minY) {
-				minY = nodeWrapper.top;
+			if (nodeWrapper.outerTop < minY) {
+				minY = nodeWrapper.outerTop;
 			}
-			if (nodeWrapper.right > maxX) {
-				maxX = nodeWrapper.right;
+			if (nodeWrapper.outerRight > maxX) {
+				maxX = nodeWrapper.outerRight;
 			}
-			if (nodeWrapper.bottom > maxY) {
-				maxY = nodeWrapper.bottom;
+			if (nodeWrapper.outerBottom > maxY) {
+				maxY = nodeWrapper.outerBottom;
 			}
 		}
 

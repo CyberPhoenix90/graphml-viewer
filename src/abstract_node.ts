@@ -3,26 +3,33 @@ import { Vector } from './vector.js';
 export abstract class AbstractNode {
 	public id: string;
 
+	//Outer refers to the edge of the rendered content including labels and edges
 	// The default values are designed to never change the AABB computation in case the node has no rendered content
-	public left: number = Number.MAX_SAFE_INTEGER;
-	public right: number = Number.MIN_SAFE_INTEGER;
-	public top: number = Number.MAX_SAFE_INTEGER;
-	public bottom: number = Number.MIN_SAFE_INTEGER;
+	public outerLeft: number = Number.MAX_SAFE_INTEGER;
+	public outerRight: number = Number.MIN_SAFE_INTEGER;
+	public outerTop: number = Number.MAX_SAFE_INTEGER;
+	public outerBottom: number = Number.MIN_SAFE_INTEGER;
+
+	//Inner refers to just the node itself
+	public innerLeft: number = Number.MAX_SAFE_INTEGER;
+	public innerRight: number = Number.MIN_SAFE_INTEGER;
+	public innerTop: number = Number.MAX_SAFE_INTEGER;
+	public innerBottom: number = Number.MIN_SAFE_INTEGER;
 
 	public get width(): number {
-		return this.right - this.left;
+		return this.innerRight - this.innerLeft;
 	}
 
 	public get height(): number {
-		return this.bottom - this.top;
+		return this.innerBottom - this.innerTop;
 	}
 
 	public get centerX(): number {
-		return this.left + this.width / 2;
+		return this.innerLeft + this.width / 2;
 	}
 
 	public get centerY(): number {
-		return this.top + this.height / 2;
+		return this.innerTop + this.height / 2;
 	}
 
 	protected root: Element;
@@ -32,19 +39,40 @@ export abstract class AbstractNode {
 		this.root = nodeXML;
 		const geometry = nodeXML.getElementsByTagName('y:Geometry');
 		if (geometry.length) {
-			this.left = parseFloat(geometry[0].getAttribute('x'));
-			this.right = this.left + parseFloat(geometry[0].getAttribute('width'));
-			this.top = parseFloat(geometry[0].getAttribute('y'));
-			this.bottom = this.top + parseFloat(geometry[0].getAttribute('height'));
+			this.innerLeft = this.outerLeft = parseFloat(geometry[0].getAttribute('x'));
+			this.innerRight = this.outerRight = this.innerLeft + parseFloat(geometry[0].getAttribute('width'));
+			this.innerTop = this.outerTop = parseFloat(geometry[0].getAttribute('y'));
+			this.innerBottom = this.outerBottom = this.innerTop + parseFloat(geometry[0].getAttribute('height'));
+		}
+		const labels = this.root.getElementsByTagName('y:NodeLabel');
+		if (labels.length) {
+			for (const label of labels) {
+				const x = parseFloat(label.getAttribute('x')) + this.innerLeft;
+				const y = parseFloat(label.getAttribute('y')) + this.innerTop;
+				const w = parseFloat(label.getAttribute('width'));
+				const h = parseFloat(label.getAttribute('height'));
+				if (x < this.outerLeft) {
+					this.outerLeft = x;
+				}
+				if (y < this.outerTop) {
+					this.outerTop = y;
+				}
+				if (x + w > this.outerRight) {
+					this.outerRight = x + w;
+				}
+				if (y + h > this.outerBottom) {
+					this.outerBottom = y + h;
+				}
+			}
 		}
 	}
 
 	public generateBoundingBox(): Vector[] {
 		return [
-			new Vector(this.left + this.width, this.top),
-			new Vector(this.left + this.width, this.top + this.height),
-			new Vector(this.left, this.top + this.height),
-			new Vector(this.left, this.top)
+			new Vector(this.innerLeft + this.width, this.innerTop),
+			new Vector(this.innerLeft + this.width, this.innerTop + this.height),
+			new Vector(this.innerLeft, this.innerTop + this.height),
+			new Vector(this.innerLeft, this.innerTop)
 		];
 	}
 
@@ -84,6 +112,6 @@ export abstract class AbstractNode {
 	}
 
 	public setPosition(svgNode: SVGSVGElement | SVGTextElement | SVGGElement, offsetX: number, offsetY: number) {
-		svgNode.setAttribute('transform', `translate(${this.left + offsetX},${this.top + offsetY})`);
+		svgNode.setAttribute('transform', `translate(${this.innerLeft + offsetX},${this.innerTop + offsetY})`);
 	}
 }
